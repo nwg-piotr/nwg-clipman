@@ -67,6 +67,7 @@ def terminate_old_instance():
             if old_pid != pid:
                 eprint(f"Attempting to kill the old instance in case it's still running, pid: {old_pid}")
                 os.kill(old_pid, 15)
+                sys.exit(0)
         except:
             pass
     # save new pid
@@ -227,6 +228,7 @@ def build_flowbox():
 
 
 def main():
+    terminate_old_instance()
     # handle signals
     catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
     for sig in catchable_sigs:
@@ -243,7 +245,7 @@ def main():
     args = parser.parse_args()
 
     # kill running instance, if any
-    terminate_old_instance()
+    # terminate_old_instance()
 
     global search_entry
     global flowbox_wrapper
