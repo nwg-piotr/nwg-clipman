@@ -60,18 +60,19 @@ def signal_handler(sig, frame):
 
 
 def terminate_old_instance():
-    tmp_file = os.path.join(temp_dir(), "nwg-clipman-pid")
-    if os.path.isfile(tmp_file):
+    pid_file = os.path.join(temp_dir(), "nwg-clipman-pid")
+    if os.path.isfile(pid_file):
         try:
-            old_pid = int(load_text_file(tmp_file))
+            old_pid = int(load_text_file(pid_file))
             # if old_pid != pid:
             eprint(f"Attempting to kill the old instance in case it's still running, pid: {old_pid}")
             os.kill(old_pid, 15)
+            print("terminating")
             sys.exit(0)
         except:
             pass
     # save new pid
-    save_string(str(pid), tmp_file)
+    save_string(str(pid), pid_file)
 
 
 def handle_keyboard(win, event):
