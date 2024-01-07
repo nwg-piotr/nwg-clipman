@@ -63,11 +63,11 @@ def terminate_old_instance():
     tmp_file = os.path.join(temp_dir(), "nwg-clipman-pid")
     if os.path.isfile(tmp_file):
         try:
-            old_pid = int(load_text_file(tmp_file))
-            if old_pid != pid:
-                eprint(f"Attempting to kill the old instance in case it's still running, pid: {old_pid}")
-                os.kill(old_pid, 15)
-                sys.exit(0)
+            # old_pid = int(load_text_file(tmp_file))
+            # if old_pid != pid:
+            eprint(f"Attempting to kill the old instance in case it's still running, pid: {old_pid}")
+            os.kill(pid, 15)
+            sys.exit(0)
         except:
             pass
     # save new pid
