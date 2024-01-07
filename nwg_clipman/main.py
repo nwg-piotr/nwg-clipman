@@ -68,7 +68,7 @@ def terminate_old_instance():
             eprint(f"Attempting to kill the old instance in case it's still running, pid: {old_pid}")
             os.kill(old_pid, 15)
             print("terminating")
-            sys.exit(0)
+            exit()
         except:
             pass
     # save new pid
