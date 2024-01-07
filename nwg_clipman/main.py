@@ -68,11 +68,11 @@ def terminate_old_instance():
             eprint(f"Attempting to kill the old instance in case it's still running, pid: {old_pid}")
             os.kill(old_pid, 15)
             print("terminating")
-            Gtk.main_quit()
+            sys.exit(0)
         except:
             pass
     # save new pid
-    save_string(str(pid), pid_file)
+    save_string(str(os.getpid()), pid_file)
 
 
 def handle_keyboard(win, event):
