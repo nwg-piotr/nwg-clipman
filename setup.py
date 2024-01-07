@@ -13,7 +13,9 @@ setup(
     description='nwg-shell clipboard manager',
     packages=find_packages(),
     include_package_data=True,
-    package_data={},
+    package_data={
+        "": ["langs/*"]
+    },
     url='https://github.com/nwg-piotr/nwg-clipman',
     license='MIT',
     author='Piotr Miller',
