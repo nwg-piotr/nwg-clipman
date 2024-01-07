@@ -1,0 +1,7 @@
+/.idea
+/venv
+/nwg_clipman.egg-info/
+/build/
+/dist/
+/nwg_clipman/__pycache__
+/result
