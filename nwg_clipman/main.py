@@ -218,8 +218,6 @@ def main():
     for sig in catchable_sigs:
         signal.signal(sig, signal_handler)
 
-    terminate_old_instance()
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--version", action="version",
                         version="%(prog)s version {}".format(__version__),
@@ -229,6 +227,8 @@ def main():
 
     global args
     args = parser.parse_args()
+
+    terminate_old_instance()
 
     global search_entry
     global flowbox_wrapper
