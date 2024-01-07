@@ -44,6 +44,7 @@ if not is_command("cliphist") or not is_command("wl-copy"):
 def list_cliphist():
     try:
         output = subprocess.check_output("cliphist list", shell=True)
+        # convert to string, regardless of disallowed chars
         o = ''.join(map(chr, output))
         return o
     except subprocess.CalledProcessError:
@@ -59,21 +60,24 @@ def signal_handler(sig, frame):
 
 
 def terminate_old_instance():
-    tmp_dir = temp_dir()
-    try:
-        old_pid = int(load_text_file(os.path.join(tmp_dir, "nwg-clipman-pid")))
-        if old_pid != pid:
-            eprint(f"Killing old instance in case it's still running, pid: {old_pid}")
-            os.kill(old_pid, 15)
-    except:
-        pass
-    save_string(str(pid), os.path.join(tmp_dir, "nwg-clipman-pid"))
+    tmp_file = os.path.join(temp_dir(), "nwg-clipman-pid")
+    if os.path.isfile(tmp_file):
+        try:
+            old_pid = int(load_text_file(tmp_file))
+            if old_pid != pid:
+                eprint(f"Attempting to kill the old instance in case it's still running, pid: {old_pid}")
+                os.kill(old_pid, 15)
+        except:
+            pass
+    # save new pid
+    save_string(str(pid), tmp_file)
 
 
 def handle_keyboard(win, event):
     global search_entry
+    # exit on Esc key, but...
     if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
-        # if search_entry not empty, clear it first
+        # ...if search_entry not empty, clear it first
         if search_entry.get_text():
             search_entry.set_text("")
         else:
@@ -82,12 +86,13 @@ def handle_keyboard(win, event):
 
 def load_vocabulary():
     global voc
-    # basic vocabulary (for en_US)
+    # basic vocabulary (en_US)
     voc = load_json(os.path.join(dir_name, "langs", "en_US"))
     if not voc:
         eprint("Failed loading vocabulary, terminating")
         sys.exit(1)
 
+    # check "interface-locale" forced in nwg-shell data file, if forced, and the file exists
     shell_data = load_shell_data()
 
     lang = os.getenv("LANG")
@@ -122,6 +127,7 @@ def on_leave_notify_event(widget, event):
 
 
 def flowbox_filter(_search_entry):
+    # filter flowbox visibility by search_entry content
     def filter_func(fb_child, _text):
         if _text in fb_child.get_name():
             return True
@@ -133,12 +139,14 @@ def flowbox_filter(_search_entry):
 
 
 def on_child_activated(fb, child):
+    # copy and terminate
     eprint(f"Copying: '{child.get_name()}'")
     subprocess.Popen(f'echo "{child.get_name()}" | cliphist decode | wl-copy', shell=True)
     Gtk.main_quit()
 
 
 def on_del_button(btn, name):
+    # delete entry from cliphist
     eprint(f"Delete '{name}'")
     name = bytes(name, 'utf-8')
     subprocess.run("cliphist delete", shell=True, input=name)
@@ -147,6 +155,7 @@ def on_del_button(btn, name):
 
 
 def on_wipe_button(btn):
+    # wipe cliphist
     eprint("Wipe cliphist")
     subprocess.run("cliphist wipe", shell=True)
 
@@ -181,9 +190,11 @@ class FlowboxItem(Gtk.Box):
 def build_flowbox():
     global flowbox_wrapper
     global flowbox
+    # destroy flowbox wrapper content, if any
     for item in flowbox_wrapper.get_children():
         item.destroy()
 
+    # build from scratch
     scrolled = Gtk.ScrolledWindow()
     scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
     scrolled.set_min_content_height(400)
@@ -197,16 +208,18 @@ def build_flowbox():
     flowbox.set_max_children_per_line(1)
     scrolled.add(flowbox)
 
+    # query cliphist
     clip_hist = list_cliphist().splitlines()
+
     for line in clip_hist:
         parts = line.split("\t")
-        _id = parts[0]
         _name = parts[1]
 
         item = FlowboxItem(parts)
 
         child = Gtk.FlowBoxChild()
-        child.set_name(line)
+        # we will be filtering by _name
+        child.set_name(_name)
         child.add(item)
         flowbox.add(child)
 
@@ -214,6 +227,7 @@ def build_flowbox():
 
 
 def main():
+    # handle signals
     catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
     for sig in catchable_sigs:
         signal.signal(sig, signal_handler)
@@ -228,6 +242,7 @@ def main():
     global args
     args = parser.parse_args()
 
+    # kill running instance, if any
     terminate_old_instance()
 
     global search_entry
@@ -237,7 +252,9 @@ def main():
     load_vocabulary()
 
     window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
+
     if not args.window:
+        # attach to gtk-layer-shell
         GtkLayerShell.init_for_window(window)
         GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
         GtkLayerShell.set_exclusive_zone(window, 0)
@@ -257,13 +274,16 @@ def main():
     search_entry.connect('search_changed', flowbox_filter)
     vbox.pack_start(search_entry, False, True, 0)
 
+    # wrapper for the flowbox (global)
     flowbox_wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     flowbox_wrapper.set_property("margin-left", 12)
     flowbox_wrapper.set_property("margin-right", 12)
     vbox.pack_start(flowbox_wrapper, False, False, 0)
 
+    # clear flowbox wrapper, build content
     build_flowbox()
 
+    # "Clear" and "Close" buttons
     hbox = Gtk.Box.new(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
     hbox.set_property("margin", 12)
     vbox.pack_end(hbox, False, False, 0)
@@ -276,6 +296,7 @@ def main():
 
     window.show_all()
 
+    # customize buttons' look
     screen = Gdk.Screen.get_default()
     provider = Gtk.CssProvider()
     style_context = Gtk.StyleContext()
