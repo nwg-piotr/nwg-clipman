@@ -235,7 +235,6 @@ def main():
     global search_entry
 
     load_vocabulary()
-    print(voc)
 
     window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
     if not args.window:
