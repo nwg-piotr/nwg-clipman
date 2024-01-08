@@ -9,7 +9,7 @@ def read(f_name):
 
 setup(
     name='nwg-clipman',
-    version='0.0.1',
+    version='0.1.0',
     description='nwg-shell clipboard manager',
     packages=find_packages(),
     include_package_data=True,
