@@ -27,7 +27,8 @@
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg1" />
+     inkscape:current-layer="svg1"
+     showgrid="false" />
   <defs
      id="defs1">
     <style
@@ -38,7 +39,8 @@
   </defs>
   <g
      id="g1"
-     style="fill:#000000;opacity:0.2">
+     style="opacity:0.2;fill:#000000"
+     transform="matrix(1.3446702,0,0,1.3446702,-4.396911,-3.6947586)">
     <path
        style="fill:#000000"
        class="ColorScheme-Text"
@@ -47,7 +49,7 @@
   </g>
   <g
      id="g2"
-     transform="translate(-0.06011275,-0.69441523)"
+     transform="matrix(1.3446702,0,0,1.3446702,-4.4777428,-4.6285181)"
      style="fill:#347284;fill-opacity:1">
     <path
        style="color:#dfdfdf;fill:#347284;fill-opacity:1"
