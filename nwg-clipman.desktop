@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+
+Name=Clipboard manager
+Name[pl]=Menedżer schowka
+
+GenericName=nwg-shell clipboard manager
+GenericName[pl]=Menedżer schowka nwg-shell
+
+Comment=Clipboard history search and management tool
+Comment[pl]=Narzędzie do wyszukiwania i zarządzania historią schowka
+
+Exec=nwg-clipman
+Icon=nwg-clipman
+Terminal=false
+Categories=Utility;
