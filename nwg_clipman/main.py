@@ -43,10 +43,10 @@ if not is_command("cliphist") or not is_command("wl-copy"):
 
 def list_cliphist():
     try:
-        output = subprocess.check_output("cliphist list", shell=True).decode('utf-8', errors="ignore")
+        output = subprocess.check_output("cliphist list", shell=True).decode('utf-8', errors="ignore").splitlines()
         return output
     except subprocess.CalledProcessError:
-        return ""
+        return []
 
 
 def signal_handler(sig, frame):
@@ -207,10 +207,9 @@ def build_flowbox():
     scrolled.add(flowbox)
 
     # query cliphist
-    clip_hist = list_cliphist().splitlines()
+    clip_hist = list_cliphist()
 
     for line in clip_hist:
-        print(line)
         parts = line.split("\t")
         _name = parts[1]
 
@@ -226,7 +225,6 @@ def build_flowbox():
 
 
 def main():
-    terminate_old_instance()
     # handle signals
     catchable_sigs = set(signal.Signals) - {signal.SIGKILL, signal.SIGSTOP}
     for sig in catchable_sigs:
@@ -243,12 +241,13 @@ def main():
     args = parser.parse_args()
 
     # kill running instance, if any
-    # terminate_old_instance()
+    terminate_old_instance()
 
     global search_entry
     global flowbox_wrapper
     global search_entry
 
+    # UI strings localization
     load_vocabulary()
 
     window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
