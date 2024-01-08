@@ -139,7 +139,7 @@ def flowbox_filter(_search_entry):
 def on_child_activated(fb, child):
     # copy and terminate
     eprint(f"Copying: '{child.get_name()}'")
-    subprocess.Popen(f'echo "{child.get_name()}" | cliphist decode | wl-copy', shell=True)
+    subprocess.Popen(f"echo '{child.get_name()}' | cliphist decode | wl-copy", shell=True)
     Gtk.main_quit()
 
 
