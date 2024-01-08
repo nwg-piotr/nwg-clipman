@@ -6,7 +6,7 @@ Nwg-clipman is a GTK3-based GUI for Senan Kelly's [cliphist](https://github.com/
 as management of the clipboard history from a window opened on gtk-layer-shell. The program is intended for use with
 sway, Hyprland and other wlroots-based Wayland compositors.
 
-![image](https://github.com/nwg-piotr/nwg-clipman/assets/20579136/1ce55202-245e-40c2-9d34-b539b5f81261)
+![image](https://github.com/nwg-piotr/nwg-clipman/assets/20579136/70ce9ed2-8ed4-4131-8abc-fcfe057964ef)
 
 ## Dependencies
 
