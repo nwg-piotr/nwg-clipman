@@ -43,10 +43,8 @@ if not is_command("cliphist") or not is_command("wl-copy"):
 
 def list_cliphist():
     try:
-        output = subprocess.check_output("cliphist list", shell=True)
-        # convert to string, regardless of disallowed chars
-        o = ''.join(map(chr, output))
-        return o
+        output = subprocess.check_output("cliphist list", shell=True).decode('utf-8', errors="ignore")
+        return output
     except subprocess.CalledProcessError:
         return ""
 
@@ -66,7 +64,7 @@ def terminate_old_instance():
             old_pid = int(load_text_file(pid_file))
             if old_pid != pid:
                 eprint(f"Attempting to kill the old instance in case it's still running, pid: {old_pid}")
-                os.kill(old_pid, 15)
+                os.kill(old_pid, signal.SIGINT)
         except:
             pass
     # save new pid
@@ -212,6 +210,7 @@ def build_flowbox():
     clip_hist = list_cliphist().splitlines()
 
     for line in clip_hist:
+        print(line)
         parts = line.split("\t")
         _name = parts[1]
 
@@ -219,7 +218,7 @@ def build_flowbox():
 
         child = Gtk.FlowBoxChild()
         # we will be filtering by _name
-        child.set_name(_name)
+        child.set_name(line)
         child.add(item)
         flowbox.add(child)
 
