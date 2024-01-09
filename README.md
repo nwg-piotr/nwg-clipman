@@ -20,6 +20,8 @@ sway, Hyprland and other wlroots-based Wayland compositors.
 
 ## Installation
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/nwg-clipman.svg)](https://repology.org/project/nwg-clip
+
 The program may be installed by cloning this repository and executing the `install.sh` script (make sure you installed
 dependencies first). Then you need to edit your compositor config file, to enable storing clipboard history to cliphist.
 
