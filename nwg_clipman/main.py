@@ -263,6 +263,7 @@ def main():
     window.connect("key-release-event", handle_keyboard)
 
     vbox = Gtk.Box.new(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+    vbox.set_property("name", "main-wrapper")
     window.add(vbox)
 
     search_entry = Gtk.SearchEntry()
@@ -302,6 +303,7 @@ def main():
     style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
     css = b""" 
+    #main-wrapper { background-color: rgba(0, 0, 0, 0.2) } 
     #del-btn { background: none; border: none; margin: 0; padding: 0 } 
     #del-btn:hover { background-color: rgba(255, 255, 255, 0.1) } 
     """
