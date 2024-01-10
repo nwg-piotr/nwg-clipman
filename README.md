@@ -55,8 +55,6 @@ Example for Hyprland:
 bind = ALT, C, exec, nwg-clipman
 ```
 
-You may clear the search entry / close the program window with the `Esc` key.
-
 ## Options
 
 ```text
@@ -69,3 +67,9 @@ options:
   -n, --numbers  hide item Numbers in the list
   -w, --window   run in regular Window, w/o layer shell
 ```
+
+## Hints
+
+- You can get rid of numbers in the cliboard history by using the `-n` argument.
+- If you'd like the window to open normally, not on the layer shell, use the `-w` argument.
+- You may clear the search entry / close the program window with the `Esc` key.
