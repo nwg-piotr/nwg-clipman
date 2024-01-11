@@ -176,9 +176,10 @@ def preview():
     #     if pixbuf:
     #         scaled_pixbuf = pixbuf.scale_simple(128, 128, GdkPixbuf.InterpType.BILINEAR)
     #         placeholder_img.set_from_pixbuf(scaled_pixbuf)
-    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/tmp/clipman.png", 128, 127)
     try:
-        placeholder_img.set_from_pixbuf(pixbuf)
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/tmp/clipman.png", 128, 127)
+        if pixbuf:
+            placeholder_img.set_from_pixbuf(pixbuf)
     except:
         placeholder_img.set_from_pixbuf(placeholder_pixbuf)
 
