@@ -1,4 +1,7 @@
 {
   "clear": "Clear",
-  "close": "Close"
+  "close": "Close",
+  "copy": "Copy",
+  "preview": "Preview",
+  "preview-unavailable": "Preview unavailable"
 }

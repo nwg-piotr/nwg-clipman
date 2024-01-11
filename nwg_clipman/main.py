@@ -28,7 +28,7 @@ except ValueError:
 
 from nwg_clipman.tools import *
 from nwg_clipman.__about__ import __version__
-from gi.repository import Gtk, Gdk, GtkLayerShell, GdkPixbuf
+from gi.repository import Gtk, Gdk, GtkLayerShell, GdkPixbuf, Pango
 
 dir_name = os.path.dirname(__file__)
 pid = os.getpid()
@@ -37,8 +37,9 @@ voc = {}
 search_entry = None
 flowbox_wrapper = None
 flowbox = None
-placeholder_img = Gtk.Image.new_from_icon_name("nwg-clipman", Gtk.IconSize.DND)
-placeholder_pixbuf = placeholder_img.get_pixbuf()
+preview_frame = None
+btn_copy = None
+selected_item = None
 
 if not is_command("cliphist") or not is_command("wl-copy"):
     eprint("Dependencies (cliphist, wl-clipboard) check failed, terminating")
@@ -141,12 +142,50 @@ def flowbox_filter(_search_entry):
 
 
 def on_child_activated(fb, child):
-    # copy and terminate
-    eprint(f"Copying: '{child.get_name()}'")
-    subprocess.run(f"echo '{child.get_name()}' | cliphist decode | wl-copy", shell=True)
-    subprocess.run(f"echo '{child.get_name()}' | cliphist decode > /tmp/clipman.png", shell=True)
+    global selected_item
+    selected_item = child.get_name()
+    name = bytes(child.get_name(), 'utf-8')
+    subprocess.run("cliphist decode > /tmp/clipman.png", shell=True, input=name)
     preview()
-    # Gtk.main_quit()
+
+
+def preview():
+    pixbuf = None
+    try:
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/tmp/clipman.png", 256, 256)
+    except Exception as e:
+        pass
+
+    for child in preview_frame.get_children():
+        child.destroy()
+    preview_frame.set_label(voc["preview"])
+
+    if pixbuf:
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_min_content_height(256)
+        preview_frame.add(scrolled)
+
+        image = Gtk.Image.new_from_pixbuf(pixbuf)
+        scrolled.add(image)
+    else:
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_min_content_height(256)
+        preview_frame.add(scrolled)
+
+        text = load_text_file("/tmp/clipman.png")
+        if not text:
+            text = voc["preview-unavailable"]
+        label = Gtk.Label.new(text)
+        label.set_max_width_chars(80)
+        label.set_line_wrap(True)
+        label.set_line_wrap_mode(Pango.WrapMode.CHAR)
+
+        scrolled.add(label)
+
+    btn_copy.set_sensitive(True)
+    preview_frame.show_all()
 
 
 def on_del_button(btn, name):
@@ -166,22 +205,11 @@ def on_wipe_button(btn):
     Gtk.main_quit()
 
 
-def preview():
-    # clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
-    # print(clipboard.wait_is_image_available())
-    # image = clipboard.wait_for_image()
-    # print(image)
-    # if image is not None:
-    #     pixbuf = Gtk.Image.get_pixbuf()
-    #     if pixbuf:
-    #         scaled_pixbuf = pixbuf.scale_simple(128, 128, GdkPixbuf.InterpType.BILINEAR)
-    #         placeholder_img.set_from_pixbuf(scaled_pixbuf)
-    try:
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/tmp/clipman.png", 128, 127)
-        if pixbuf:
-            placeholder_img.set_from_pixbuf(pixbuf)
-    except:
-        placeholder_img.set_from_pixbuf(placeholder_pixbuf)
+def on_copy_button(btn):
+    eprint(f"Copying: '{selected_item}'")
+    name = bytes(selected_item, 'utf-8')
+    subprocess.run("cliphist decode | wl-copy", shell=True, input=name)
+    Gtk.main_quit()
 
 
 class FlowboxItem(Gtk.Box):
@@ -286,9 +314,12 @@ def main():
     window.connect('destroy', Gtk.main_quit)
     window.connect("key-release-event", handle_keyboard)
 
-    vbox = Gtk.Box.new(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+    vbox = Gtk.Box.new(orientation=Gtk.Orientation.VERTICAL, spacing=6)
     vbox.set_property("name", "main-wrapper")
     window.add(vbox)
+
+    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+    vbox.pack_start(hbox, False, False, 0)
 
     search_entry = Gtk.SearchEntry()
     search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "edit-clear-symbolic")
@@ -296,7 +327,11 @@ def main():
     search_entry.set_property("margin", 12)
     search_entry.set_size_request(750, 0)
     search_entry.connect('search_changed', flowbox_filter)
-    vbox.pack_start(search_entry, False, True, 0)
+    hbox.pack_start(search_entry, False, True, 0)
+
+    btn = Gtk.Button.new_with_label(voc["clear"])
+    btn.set_property("valign", Gtk.Align.CENTER)
+    hbox.pack_start(btn, False, False, 6)
 
     # wrapper for the flowbox (global)
     flowbox_wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -311,16 +346,33 @@ def main():
     hbox.set_property("margin", 12)
     vbox.pack_end(hbox, False, False, 0)
 
-    # image preview
-    hbox.pack_start(placeholder_img, False, False, 0)
+    global preview_frame
+    preview_frame = Gtk.Frame.new(voc["preview"])
+    hbox.pack_start(preview_frame, True, True, 0)
+
+    # temporary placeholder for future content preview
+    placeholder_box = Gtk.Box.new(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    preview_frame.add(placeholder_box)
+    placeholder_box.set_size_request(0, 256)
+    preview_frame.show_all()
 
     # "Clear" and "Close" buttons
+    ibox = Gtk.Box.new(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+    ibox.set_homogeneous(True)
+    hbox.pack_end(ibox, False, False, 0)
+
+    global btn_copy
+    btn_copy = Gtk.Button.new_with_label(voc["copy"])
+    btn_copy.set_property("valign", Gtk.Align.END)
+    btn_copy.connect("clicked", on_copy_button)
+    btn_copy.set_sensitive(False)
+    ibox.pack_start(btn_copy, True, True, 0)
+
     btn = Gtk.Button.new_with_label(voc["close"])
+    btn.set_property("valign", Gtk.Align.END)
     btn.connect("clicked", Gtk.main_quit)
-    hbox.pack_end(btn, False, False, 0)
-    btn = Gtk.Button.new_with_label(voc["clear"])
-    btn.connect("clicked", on_wipe_button)
-    hbox.pack_end(btn, False, False, 0)
+    ibox.pack_start(btn, True, True, 0)
+
 
     window.show_all()
 
@@ -331,7 +383,8 @@ def main():
     style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
     css = b""" 
-    #main-wrapper { background-color: rgba(0, 0, 0, 0.2) } 
+    #main-wrapper { background-color: rgba(0, 0, 0, 0.1) }
+    #preview { background-color: rgba(255, 255, 255, 0.1) } 
     #del-btn { background: none; border: none; margin: 0; padding: 0 } 
     #del-btn:hover { background-color: rgba(255, 255, 255, 0.1) } 
     """
