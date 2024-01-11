@@ -373,7 +373,6 @@ def main():
     btn.connect("clicked", Gtk.main_quit)
     ibox.pack_start(btn, True, True, 0)
 
-
     window.show_all()
 
     # customize buttons' look
@@ -384,7 +383,6 @@ def main():
 
     css = b""" 
     #main-wrapper { background-color: rgba(0, 0, 0, 0.1) }
-    #preview { background-color: rgba(255, 255, 255, 0.1) } 
     #del-btn { background: none; border: none; margin: 0; padding: 0 } 
     #del-btn:hover { background-color: rgba(255, 255, 255, 0.1) } 
     """
