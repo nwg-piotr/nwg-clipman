@@ -12,6 +12,8 @@ import argparse
 import os.path
 import signal
 import sys
+import time
+
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -26,7 +28,7 @@ except ValueError:
 
 from nwg_clipman.tools import *
 from nwg_clipman.__about__ import __version__
-from gi.repository import Gtk, Gdk, GtkLayerShell
+from gi.repository import Gtk, Gdk, GtkLayerShell, GdkPixbuf
 
 dir_name = os.path.dirname(__file__)
 pid = os.getpid()
@@ -35,6 +37,8 @@ voc = {}
 search_entry = None
 flowbox_wrapper = None
 flowbox = None
+placeholder_img = Gtk.Image.new_from_icon_name("nwg-clipman", Gtk.IconSize.DND)
+placeholder_pixbuf = placeholder_img.get_pixbuf()
 
 if not is_command("cliphist") or not is_command("wl-copy"):
     eprint("Dependencies (cliphist, wl-clipboard) check failed, terminating")
@@ -139,8 +143,10 @@ def flowbox_filter(_search_entry):
 def on_child_activated(fb, child):
     # copy and terminate
     eprint(f"Copying: '{child.get_name()}'")
-    subprocess.Popen(f"echo '{child.get_name()}' | cliphist decode | wl-copy", shell=True)
-    Gtk.main_quit()
+    subprocess.run(f"echo '{child.get_name()}' | cliphist decode | wl-copy", shell=True)
+    subprocess.run(f"echo '{child.get_name()}' | cliphist decode > /tmp/clipman.png", shell=True)
+    preview()
+    # Gtk.main_quit()
 
 
 def on_del_button(btn, name):
@@ -158,6 +164,23 @@ def on_wipe_button(btn):
     subprocess.run("cliphist wipe", shell=True)
 
     Gtk.main_quit()
+
+
+def preview():
+    # clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+    # print(clipboard.wait_is_image_available())
+    # image = clipboard.wait_for_image()
+    # print(image)
+    # if image is not None:
+    #     pixbuf = Gtk.Image.get_pixbuf()
+    #     if pixbuf:
+    #         scaled_pixbuf = pixbuf.scale_simple(128, 128, GdkPixbuf.InterpType.BILINEAR)
+    #         placeholder_img.set_from_pixbuf(scaled_pixbuf)
+    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/tmp/clipman.png", 128, 127)
+    try:
+        placeholder_img.set_from_pixbuf(pixbuf)
+    except:
+        placeholder_img.set_from_pixbuf(placeholder_pixbuf)
 
 
 class FlowboxItem(Gtk.Box):
@@ -283,10 +306,14 @@ def main():
     # clear flowbox wrapper, build content
     build_flowbox()
 
-    # "Clear" and "Close" buttons
     hbox = Gtk.Box.new(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
     hbox.set_property("margin", 12)
     vbox.pack_end(hbox, False, False, 0)
+
+    # image preview
+    hbox.pack_start(placeholder_img, False, False, 0)
+
+    # "Clear" and "Close" buttons
     btn = Gtk.Button.new_with_label(voc["close"])
     btn.connect("clicked", Gtk.main_quit)
     hbox.pack_end(btn, False, False, 0)
