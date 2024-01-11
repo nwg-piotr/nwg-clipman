@@ -329,8 +329,10 @@ def main():
     search_entry.connect('search_changed', flowbox_filter)
     hbox.pack_start(search_entry, False, True, 0)
 
+    # "Clear" button next to seach entry
     btn = Gtk.Button.new_with_label(voc["clear"])
     btn.set_property("valign", Gtk.Align.CENTER)
+    btn.connect("clicked", on_wipe_button)
     hbox.pack_start(btn, False, False, 6)
 
     # wrapper for the flowbox (global)
