@@ -12,6 +12,7 @@ import argparse
 import os.path
 import signal
 import sys
+
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -26,22 +27,29 @@ except ValueError:
 
 from nwg_clipman.tools import *
 from nwg_clipman.__about__ import __version__
-from gi.repository import Gtk, Gdk, GtkLayerShell
+from gi.repository import Gtk, Gdk, GtkLayerShell, GdkPixbuf, Pango
 
 dir_name = os.path.dirname(__file__)
 pid = os.getpid()
 args = None
 voc = {}
+tmp_file = os.path.join(temp_dir(), "clipman.dump")
+window = None
 search_entry = None
 flowbox_wrapper = None
 flowbox = None
+preview_frame = None
+btn_copy = None
+selected_item = None
 
 if not is_command("cliphist") or not is_command("wl-copy"):
+    # die if dependencies check failed
     eprint("Dependencies (cliphist, wl-clipboard) check failed, terminating")
     sys.exit(1)
 
 
 def list_cliphist():
+    # query cliphist
     try:
         output = subprocess.check_output("cliphist list", shell=True).decode('utf-8', errors="ignore").splitlines()
         return output
@@ -72,10 +80,9 @@ def terminate_old_instance():
 
 
 def handle_keyboard(win, event):
+    # on Esc key first search entry if not empty, else terminate
     global search_entry
-    # exit on Esc key, but...
     if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
-        # ...if search_entry not empty, clear it first
         if search_entry.get_text():
             search_entry.set_text("")
         else:
@@ -83,6 +90,7 @@ def handle_keyboard(win, event):
 
 
 def load_vocabulary():
+    # translate UI
     global voc
     # basic vocabulary (en_US)
     voc = load_json(os.path.join(dir_name, "langs", "en_US"))
@@ -90,7 +98,7 @@ def load_vocabulary():
         eprint("Failed loading vocabulary, terminating")
         sys.exit(1)
 
-    # check "interface-locale" forced in nwg-shell data file, if forced, and the file exists
+    # check "interface-locale" forced in nwg-shell data file - if forced, and the file exists
     shell_data = load_shell_data()
 
     lang = os.getenv("LANG")
@@ -137,10 +145,53 @@ def flowbox_filter(_search_entry):
 
 
 def on_child_activated(fb, child):
-    # copy and terminate
-    eprint(f"Copying: '{child.get_name()}'")
-    subprocess.Popen(f"echo '{child.get_name()}' | cliphist decode | wl-copy", shell=True)
-    Gtk.main_quit()
+    # on flowbox item clicked
+    global selected_item
+    selected_item = child.get_name()
+    name = bytes(child.get_name(), 'utf-8')
+    subprocess.run(f"cliphist decode > {tmp_file}", shell=True, input=name)
+    preview()
+
+
+def preview():
+    # create preview frame content
+    pixbuf = None
+    try:
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(tmp_file, 256, 256)
+    except Exception as e:
+        pass
+
+    for child in preview_frame.get_children():
+        child.destroy()
+    preview_frame.set_label(voc["preview"])
+
+    if pixbuf:
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_min_content_height(256)
+        preview_frame.add(scrolled)
+
+        image = Gtk.Image.new_from_pixbuf(pixbuf)
+        scrolled.add(image)
+    else:
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_min_content_height(256)
+        preview_frame.add(scrolled)
+
+        text = load_text_file(tmp_file)
+        if not text:
+            text = voc["preview-unavailable"]
+        label = Gtk.Label.new(text)
+        label.set_max_width_chars(80)
+        label.set_line_wrap(True)
+        label.set_line_wrap_mode(Pango.WrapMode.CHAR)
+
+        scrolled.add(label)
+    scrolled.set_property("name", "preview-window")
+
+    btn_copy.set_sensitive(True)
+    preview_frame.show_all()
 
 
 def on_del_button(btn, name):
@@ -152,19 +203,63 @@ def on_del_button(btn, name):
     build_flowbox()
 
 
-def on_wipe_button(btn):
-    # wipe cliphist
-    eprint("Wipe cliphist")
-    subprocess.run("cliphist wipe", shell=True)
-
+def on_copy_button(btn):
+    eprint(f"Copying: '{selected_item}'")
+    name = bytes(selected_item, 'utf-8')
+    subprocess.run("cliphist decode | wl-copy", shell=True, input=name)
     Gtk.main_quit()
+
+
+def on_wipe_button(btn):
+    win = ConfirmationWindow()
+
+
+class ConfirmationWindow(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, type=Gtk.WindowType.POPUP)
+        self.set_transient_for(window)
+        self.set_modal(True)
+        self.set_destroy_with_parent(True)
+
+        self.connect("key-release-event", self.handle_keyboard)
+
+        vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+        vbox.set_property("name", "warning")
+        self.add(vbox)
+        lbl = Gtk.Label.new(f'{voc["clear-clipboard-history"]}?')
+        vbox.pack_start(lbl, False, False, 6)
+        hbox = Gtk.Box.new(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+
+        vbox.pack_start(hbox, False, False, 6)
+        btn = Gtk.Button.new_with_label(voc["clear"])
+        btn.connect("clicked", self.clear_history)
+        hbox.pack_start(btn, False, False, 0)
+
+        btn = Gtk.Button.new_with_label(voc["close"])
+        btn.connect("clicked", self.quit)
+        hbox.pack_start(btn, False, False, 0)
+
+        self.show_all()
+
+    def quit(self, btn):
+        self.destroy()
+
+    def handle_keyboard(self, win, event):
+        if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
+            self.destroy()
+
+    def clear_history(self, btn):
+        eprint("Wipe cliphist")
+        subprocess.run("cliphist wipe", shell=True)
+
+        Gtk.main_quit()
 
 
 class FlowboxItem(Gtk.Box):
     def __init__(self, parts):
         Gtk.EventBox.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
-        if not args.numbers:
+        if args.numbers:
             label = Gtk.Label.new(parts[0])
             self.add(label)
 
@@ -195,7 +290,7 @@ def build_flowbox():
     # build from scratch
     scrolled = Gtk.ScrolledWindow()
     scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-    scrolled.set_min_content_height(400)
+    scrolled.set_min_content_height(300)
     scrolled.set_propagate_natural_height(True)
     flowbox_wrapper.add(scrolled)
 
@@ -230,11 +325,12 @@ def main():
     for sig in catchable_sigs:
         signal.signal(sig, signal_handler)
 
+    # arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--version", action="version",
                         version="%(prog)s version {}".format(__version__),
                         help="display Version information")
-    parser.add_argument("-n", "--numbers", action="store_true", help="hide item Numbers in the list")
+    parser.add_argument("-n", "--numbers", action="store_true", help="show item Numbers in the list")
     parser.add_argument("-w", "--window", action="store_true", help="run in regular Window, w/o layer shell")
 
     global args
@@ -244,12 +340,11 @@ def main():
     terminate_old_instance()
 
     global search_entry
-    global flowbox_wrapper
-    global search_entry
 
     # UI strings localization
     load_vocabulary()
 
+    global window
     window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
 
     if not args.window:
@@ -262,19 +357,30 @@ def main():
     window.connect('destroy', Gtk.main_quit)
     window.connect("key-release-event", handle_keyboard)
 
-    vbox = Gtk.Box.new(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+    vbox = Gtk.Box.new(orientation=Gtk.Orientation.VERTICAL, spacing=6)
     vbox.set_property("name", "main-wrapper")
     window.add(vbox)
 
+    hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+    vbox.pack_start(hbox, False, False, 0)
+
+    # search entry
     search_entry = Gtk.SearchEntry()
     search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "edit-clear-symbolic")
     search_entry.set_property("hexpand", True)
     search_entry.set_property("margin", 12)
-    search_entry.set_size_request(750, 0)
+    search_entry.set_size_request(700, 0)
     search_entry.connect('search_changed', flowbox_filter)
-    vbox.pack_start(search_entry, False, True, 0)
+    hbox.pack_start(search_entry, False, True, 0)
 
-    # wrapper for the flowbox (global)
+    # "Clear" button next to search entry
+    btn = Gtk.Button.new_with_label(voc["clear"])
+    btn.set_property("valign", Gtk.Align.CENTER)
+    btn.connect("clicked", on_wipe_button)
+    hbox.pack_start(btn, False, False, 6)
+
+    # wrapper for the flowbox
+    global flowbox_wrapper
     flowbox_wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     flowbox_wrapper.set_property("margin-left", 12)
     flowbox_wrapper.set_property("margin-right", 12)
@@ -283,29 +389,53 @@ def main():
     # clear flowbox wrapper, build content
     build_flowbox()
 
-    # "Clear" and "Close" buttons
     hbox = Gtk.Box.new(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
     hbox.set_property("margin", 12)
     vbox.pack_end(hbox, False, False, 0)
+
+    global preview_frame
+    preview_frame = Gtk.Frame.new(voc["preview"])
+    hbox.pack_start(preview_frame, True, True, 0)
+
+    # temporary placeholder for future content preview
+    placeholder_box = Gtk.Box.new(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+    preview_frame.add(placeholder_box)
+    placeholder_box.set_size_request(0, 256)
+    preview_frame.show_all()
+
+    # "Clear" and "Close" buttons
+    ibox = Gtk.Box.new(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+    ibox.set_homogeneous(True)
+    hbox.pack_end(ibox, False, False, 0)
+
+    # "Copy" button
+    global btn_copy
+    btn_copy = Gtk.Button.new_with_label(voc["copy"])
+    btn_copy.set_property("valign", Gtk.Align.END)
+    btn_copy.connect("clicked", on_copy_button)
+    btn_copy.set_sensitive(False)
+    ibox.pack_start(btn_copy, True, True, 0)
+
+    # "Close" button
     btn = Gtk.Button.new_with_label(voc["close"])
+    btn.set_property("valign", Gtk.Align.END)
     btn.connect("clicked", Gtk.main_quit)
-    hbox.pack_end(btn, False, False, 0)
-    btn = Gtk.Button.new_with_label(voc["clear"])
-    btn.connect("clicked", on_wipe_button)
-    hbox.pack_end(btn, False, False, 0)
+    ibox.pack_start(btn, True, True, 0)
 
     window.show_all()
 
-    # customize buttons' look
+    # customize styling
     screen = Gdk.Screen.get_default()
     provider = Gtk.CssProvider()
     style_context = Gtk.StyleContext()
     style_context.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
     css = b""" 
-    #main-wrapper { background-color: rgba(0, 0, 0, 0.2) } 
+    #main-wrapper { background-color: rgba(0, 0, 0, 0.1) }
+    #preview-window { padding: 0 6px 0 6px }
     #del-btn { background: none; border: none; margin: 0; padding: 0 } 
     #del-btn:hover { background-color: rgba(255, 255, 255, 0.1) } 
+    #warning { border: solid 1px; padding: 24px; margin: 6px}
     """
     provider.load_from_data(css)
 

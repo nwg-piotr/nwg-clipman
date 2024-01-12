@@ -1,4 +1,8 @@
 {
   "clear": "Chiaro",
-  "close": "Vicino"
+  "clear-clipboard-history": "Cancella la cronologia degli appunti",
+  "close": "Vicino",
+  "copy": "Copia",
+  "preview": "Anteprima",
+  "preview-unavailable": "Anteprima non disponibile"
 }

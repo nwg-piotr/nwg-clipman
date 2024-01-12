@@ -1,4 +1,8 @@
 {
   "clear": "Clair",
-  "close": "Fermer"
+  "clear-clipboard-history": "Effacer l'historique du presse-papiers",
+  "close": "Fermer",
+  "copy": "Copie",
+  "preview": "Aperçu",
+  "preview-unavailable": "Aperçu indisponible"
 }

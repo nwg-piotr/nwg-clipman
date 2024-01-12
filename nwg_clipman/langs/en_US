@@ -1,4 +1,8 @@
 {
   "clear": "Clear",
-  "close": "Close"
+  "clear-clipboard-history": "Clear clipboard history",
+  "close": "Close",
+  "copy": "Copy",
+  "preview": "Preview",
+  "preview-unavailable": "Preview unavailable"
 }
