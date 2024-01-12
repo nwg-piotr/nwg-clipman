@@ -33,6 +33,7 @@ dir_name = os.path.dirname(__file__)
 pid = os.getpid()
 args = None
 voc = {}
+window = None
 search_entry = None
 flowbox_wrapper = None
 flowbox = None
@@ -198,11 +199,7 @@ def on_del_button(btn, name):
 
 
 def on_wipe_button(btn):
-    # wipe cliphist
-    eprint("Wipe cliphist")
-    subprocess.run("cliphist wipe", shell=True)
-
-    Gtk.main_quit()
+    win = ConfirmationWindow()
 
 
 def on_copy_button(btn):
@@ -210,6 +207,47 @@ def on_copy_button(btn):
     name = bytes(selected_item, 'utf-8')
     subprocess.run("cliphist decode | wl-copy", shell=True, input=name)
     Gtk.main_quit()
+
+
+class ConfirmationWindow(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, type=Gtk.WindowType.POPUP)
+        self.set_transient_for(window)
+        self.set_modal(True)
+        self.set_destroy_with_parent(True)
+
+        self.connect("key-release-event", self.handle_keyboard)
+
+        vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+        vbox.set_property("name", "warning")
+        self.add(vbox)
+        lbl = Gtk.Label.new(f'{voc["clear-clipboard-history"]}?')
+        vbox.pack_start(lbl, False, False, 6)
+        hbox = Gtk.Box.new(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+
+        vbox.pack_start(hbox, False, False, 6)
+        btn = Gtk.Button.new_with_label(voc["clear"])
+        btn.connect("clicked", self.clear_history)
+        hbox.pack_start(btn, False, False, 0)
+
+        btn = Gtk.Button.new_with_label(voc["close"])
+        btn.connect("clicked", self.quit)
+        hbox.pack_start(btn, False, False, 0)
+
+        self.show_all()
+
+    def quit(self, btn):
+        self.destroy()
+
+    def handle_keyboard(self, win, event):
+        if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
+            self.destroy()
+
+    def clear_history(self, btn):
+        eprint("Wipe cliphist")
+        subprocess.run("cliphist wipe", shell=True)
+
+        Gtk.main_quit()
 
 
 class FlowboxItem(Gtk.Box):
@@ -302,6 +340,7 @@ def main():
     # UI strings localization
     load_vocabulary()
 
+    global window
     window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
 
     if not args.window:
@@ -325,7 +364,7 @@ def main():
     search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "edit-clear-symbolic")
     search_entry.set_property("hexpand", True)
     search_entry.set_property("margin", 12)
-    # search_entry.set_size_request(750, 0)
+    search_entry.set_size_request(600, 0)
     search_entry.connect('search_changed', flowbox_filter)
     hbox.pack_start(search_entry, False, True, 0)
 
@@ -388,6 +427,7 @@ def main():
     #preview-window { padding: 0 6px 0 6px }
     #del-btn { background: none; border: none; margin: 0; padding: 0 } 
     #del-btn:hover { background-color: rgba(255, 255, 255, 0.1) } 
+    #warning { border: solid 1px; padding: 24px; margin: 6px}
     """
     provider.load_from_data(css)
 
