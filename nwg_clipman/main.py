@@ -12,7 +12,6 @@ import argparse
 import os.path
 import signal
 import sys
-import time
 
 import gi
 
@@ -183,6 +182,7 @@ def preview():
         label.set_line_wrap_mode(Pango.WrapMode.CHAR)
 
         scrolled.add(label)
+    scrolled.set_property("name", "preview-window")
 
     btn_copy.set_sensitive(True)
     preview_frame.show_all()
@@ -385,6 +385,7 @@ def main():
 
     css = b""" 
     #main-wrapper { background-color: rgba(0, 0, 0, 0.1) }
+    #preview-window { padding: 0 6px 0 6px }
     #del-btn { background: none; border: none; margin: 0; padding: 0 } 
     #del-btn:hover { background-color: rgba(255, 255, 255, 0.1) } 
     """
