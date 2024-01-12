@@ -222,7 +222,7 @@ class FlowboxItem(Gtk.Box):
 
         eb = Gtk.EventBox()
         self.pack_start(eb, True, True, 0)
-        name = parts[1]
+        name = parts[1][:80]
         label = Gtk.Label.new(name)
         label.set_property("halign", Gtk.Align.START)
         eb.add(label)
@@ -247,7 +247,7 @@ def build_flowbox():
     # build from scratch
     scrolled = Gtk.ScrolledWindow()
     scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-    scrolled.set_min_content_height(400)
+    scrolled.set_min_content_height(300)
     scrolled.set_propagate_natural_height(True)
     flowbox_wrapper.add(scrolled)
 
@@ -325,7 +325,7 @@ def main():
     search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "edit-clear-symbolic")
     search_entry.set_property("hexpand", True)
     search_entry.set_property("margin", 12)
-    search_entry.set_size_request(750, 0)
+    # search_entry.set_size_request(750, 0)
     search_entry.connect('search_changed', flowbox_filter)
     hbox.pack_start(search_entry, False, True, 0)
 
