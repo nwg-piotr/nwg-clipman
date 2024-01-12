@@ -43,11 +43,13 @@ btn_copy = None
 selected_item = None
 
 if not is_command("cliphist") or not is_command("wl-copy"):
+    # die if dependencies check failed
     eprint("Dependencies (cliphist, wl-clipboard) check failed, terminating")
     sys.exit(1)
 
 
 def list_cliphist():
+    # query cliphist
     try:
         output = subprocess.check_output("cliphist list", shell=True).decode('utf-8', errors="ignore").splitlines()
         return output
@@ -78,7 +80,7 @@ def terminate_old_instance():
 
 
 def handle_keyboard(win, event):
-    # on Esc key first clear search entry if not empty, else terminate
+    # on Esc key first search entry if not empty, else terminate
     global search_entry
     if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
         if search_entry.get_text():
@@ -88,6 +90,7 @@ def handle_keyboard(win, event):
 
 
 def load_vocabulary():
+    # translate UI
     global voc
     # basic vocabulary (en_US)
     voc = load_json(os.path.join(dir_name, "langs", "en_US"))
@@ -142,6 +145,7 @@ def flowbox_filter(_search_entry):
 
 
 def on_child_activated(fb, child):
+    # on flowbox item clicked
     global selected_item
     selected_item = child.get_name()
     name = bytes(child.get_name(), 'utf-8')
@@ -150,6 +154,7 @@ def on_child_activated(fb, child):
 
 
 def preview():
+    # create preview frame content
     pixbuf = None
     try:
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(tmp_file, 256, 256)
@@ -198,15 +203,15 @@ def on_del_button(btn, name):
     build_flowbox()
 
 
-def on_wipe_button(btn):
-    win = ConfirmationWindow()
-
-
 def on_copy_button(btn):
     eprint(f"Copying: '{selected_item}'")
     name = bytes(selected_item, 'utf-8')
     subprocess.run("cliphist decode | wl-copy", shell=True, input=name)
     Gtk.main_quit()
+
+
+def on_wipe_button(btn):
+    win = ConfirmationWindow()
 
 
 class ConfirmationWindow(Gtk.Window):
