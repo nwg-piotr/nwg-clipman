@@ -33,6 +33,7 @@ dir_name = os.path.dirname(__file__)
 pid = os.getpid()
 args = None
 voc = {}
+tmp_file = os.path.join(temp_dir(), "clipman.dump")
 window = None
 search_entry = None
 flowbox_wrapper = None
@@ -77,10 +78,9 @@ def terminate_old_instance():
 
 
 def handle_keyboard(win, event):
+    # on Esc key first clear search entry if not empty, else terminate
     global search_entry
-    # exit on Esc key, but...
     if event.type == Gdk.EventType.KEY_RELEASE and event.keyval == Gdk.KEY_Escape:
-        # ...if search_entry not empty, clear it first
         if search_entry.get_text():
             search_entry.set_text("")
         else:
@@ -95,7 +95,7 @@ def load_vocabulary():
         eprint("Failed loading vocabulary, terminating")
         sys.exit(1)
 
-    # check "interface-locale" forced in nwg-shell data file, if forced, and the file exists
+    # check "interface-locale" forced in nwg-shell data file - if forced, and the file exists
     shell_data = load_shell_data()
 
     lang = os.getenv("LANG")
@@ -145,14 +145,14 @@ def on_child_activated(fb, child):
     global selected_item
     selected_item = child.get_name()
     name = bytes(child.get_name(), 'utf-8')
-    subprocess.run("cliphist decode > /tmp/clipman.png", shell=True, input=name)
+    subprocess.run(f"cliphist decode > {tmp_file}", shell=True, input=name)
     preview()
 
 
 def preview():
     pixbuf = None
     try:
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/tmp/clipman.png", 256, 256)
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(tmp_file, 256, 256)
     except Exception as e:
         pass
 
@@ -174,7 +174,7 @@ def preview():
         scrolled.set_min_content_height(256)
         preview_frame.add(scrolled)
 
-        text = load_text_file("/tmp/clipman.png")
+        text = load_text_file(tmp_file)
         if not text:
             text = voc["preview-unavailable"]
         label = Gtk.Label.new(text)
@@ -320,6 +320,7 @@ def main():
     for sig in catchable_sigs:
         signal.signal(sig, signal_handler)
 
+    # arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--version", action="version",
                         version="%(prog)s version {}".format(__version__),
@@ -333,8 +334,6 @@ def main():
     # kill running instance, if any
     terminate_old_instance()
 
-    global search_entry
-    global flowbox_wrapper
     global search_entry
 
     # UI strings localization
@@ -360,6 +359,7 @@ def main():
     hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
     vbox.pack_start(hbox, False, False, 0)
 
+    # search entry
     search_entry = Gtk.SearchEntry()
     search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "edit-clear-symbolic")
     search_entry.set_property("hexpand", True)
@@ -368,13 +368,14 @@ def main():
     search_entry.connect('search_changed', flowbox_filter)
     hbox.pack_start(search_entry, False, True, 0)
 
-    # "Clear" button next to seach entry
+    # "Clear" button next to search entry
     btn = Gtk.Button.new_with_label(voc["clear"])
     btn.set_property("valign", Gtk.Align.CENTER)
     btn.connect("clicked", on_wipe_button)
     hbox.pack_start(btn, False, False, 6)
 
-    # wrapper for the flowbox (global)
+    # wrapper for the flowbox
+    global flowbox_wrapper
     flowbox_wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     flowbox_wrapper.set_property("margin-left", 12)
     flowbox_wrapper.set_property("margin-right", 12)
@@ -402,6 +403,7 @@ def main():
     ibox.set_homogeneous(True)
     hbox.pack_end(ibox, False, False, 0)
 
+    # "Copy" button
     global btn_copy
     btn_copy = Gtk.Button.new_with_label(voc["copy"])
     btn_copy.set_property("valign", Gtk.Align.END)
@@ -409,6 +411,7 @@ def main():
     btn_copy.set_sensitive(False)
     ibox.pack_start(btn_copy, True, True, 0)
 
+    # "Close" button
     btn = Gtk.Button.new_with_label(voc["close"])
     btn.set_property("valign", Gtk.Align.END)
     btn.connect("clicked", Gtk.main_quit)
@@ -416,7 +419,7 @@ def main():
 
     window.show_all()
 
-    # customize buttons' look
+    # customize styling
     screen = Gdk.Screen.get_default()
     provider = Gtk.CssProvider()
     style_context = Gtk.StyleContext()
