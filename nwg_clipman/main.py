@@ -216,13 +216,13 @@ class FlowboxItem(Gtk.Box):
     def __init__(self, parts):
         Gtk.EventBox.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
-        if not args.numbers:
+        if args.numbers:
             label = Gtk.Label.new(parts[0])
             self.add(label)
 
         eb = Gtk.EventBox()
         self.pack_start(eb, True, True, 0)
-        name = parts[1][:80]
+        name = parts[1]
         label = Gtk.Label.new(name)
         label.set_property("halign", Gtk.Align.START)
         eb.add(label)
@@ -286,7 +286,7 @@ def main():
     parser.add_argument("-v", "--version", action="version",
                         version="%(prog)s version {}".format(__version__),
                         help="display Version information")
-    parser.add_argument("-n", "--numbers", action="store_true", help="hide item Numbers in the list")
+    parser.add_argument("-n", "--numbers", action="store_true", help="show item Numbers in the list")
     parser.add_argument("-w", "--window", action="store_true", help="run in regular Window, w/o layer shell")
 
     global args
