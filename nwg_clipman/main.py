@@ -364,7 +364,7 @@ def main():
     search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "edit-clear-symbolic")
     search_entry.set_property("hexpand", True)
     search_entry.set_property("margin", 12)
-    search_entry.set_size_request(600, 0)
+    search_entry.set_size_request(700, 0)
     search_entry.connect('search_changed', flowbox_filter)
     hbox.pack_start(search_entry, False, True, 0)
 

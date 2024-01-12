@@ -1,4 +1,8 @@
 {
   "clear": "Klar",
-  "close": "Schließen"
+  "clear-clipboard-history": "Verlauf der Zwischenablage löschen",
+  "close": "Schließen",
+  "copy": "Kopieren",
+  "preview": "Vorschau",
+  "preview-unavailable": "Vorschau nicht verfügbar"
 }

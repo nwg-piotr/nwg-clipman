@@ -1,4 +1,8 @@
 {
   "clear": "Clair",
-  "close": "Fermer"
+  "clear-clipboard-history": "Clear clipboard history",
+  "close": "Fermer",
+  "copy": "Copie",
+  "preview": "Aperçu",
+  "preview-unavailable": "Aperçu indisponible"
 }
