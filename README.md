@@ -77,6 +77,6 @@ options:
 
 ## Hints
 
-- You can get rid of numbers in the cliboard history by using the `nwg-clipman -n` command.
+- To see numbers in the cliboard history use the `nwg-clipman -n` command.
 - If you'd like the window to open normally, not on the layer shell, use the `nwg-clipman -w` command.
 - You may clear the search entry / close the program window with the `Esc` key.
