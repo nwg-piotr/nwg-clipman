@@ -8,6 +8,13 @@ sway, Hyprland and other wlroots-based Wayland compositors.
 
 ![nwg-clipman-0 2 0](https://github.com/nwg-piotr/nwg-clipman/assets/20579136/03fa6649-4a56-42f8-a473-504cb169bc53)
 
+## Features
+
+- image & text history item preview;
+- searching clipboard history by a textual phrase;
+- deleting selected history item;
+- clearing clipboard history.
+
 ## Dependencies
 
 - python >= 3.6;
