@@ -71,7 +71,7 @@ usage: nwg-clipman [-h] [-v] [-n] [-w]
 options:
   -h, --help     show this help message and exit
   -v, --version  display Version information
-  -n, --numbers  hide item Numbers in the list
+  -n, --numbers  show item Numbers in the list
   -w, --window   run in regular Window, w/o layer shell
 ```
 
