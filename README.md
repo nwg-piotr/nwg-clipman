@@ -1,4 +1,5 @@
-# nwg-clipman
+<img src="https://github.com/nwg-piotr/nwg-clipman/assets/20579136/7ed28176-9dba-4897-a46a-f373891b7d18" width="90" style="margin-right:10px" align=left alt="nwg-shell logo">
+<H1>nwg-clipman</H1><br>
 
 This program is a part of the [nwg-shell](https://nwg-piotr.github.io/nwg-shell) project.
 
