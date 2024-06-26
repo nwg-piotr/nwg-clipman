@@ -7,5 +7,5 @@ install -Dm 644 -t "/usr/share/doc/nwg-clipman" README.md
 
 
 python -m build --wheel --no-isolation
-[ -f /usr/bin/nwg-clipman ] && sudo rm /usr/bin/nwg-hello
+[ -f /usr/bin/nwg-clipman ] && sudo rm /usr/bin/nwg-clipman
 python -m installer dist/*.whl
