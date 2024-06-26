@@ -305,16 +305,18 @@ def build_flowbox():
     clip_hist = list_cliphist()
 
     for line in clip_hist:
-        parts = line.split("\t")
-        _name = parts[1]
+        try:
+            parts = line.split("\t")
+            _name = parts[1]
 
-        item = FlowboxItem(parts)
-
-        child = Gtk.FlowBoxChild()
-        # we will be filtering by _name
-        child.set_name(line)
-        child.add(item)
-        flowbox.add(child)
+            item = FlowboxItem(parts)
+            child = Gtk.FlowBoxChild()
+            # we will be filtering by _name
+            child.set_name(line)
+            child.add(item)
+            flowbox.add(child)
+        except IndexError:
+            eprint(f"Error parsing line: {line}")
 
     flowbox_wrapper.show_all()
 
