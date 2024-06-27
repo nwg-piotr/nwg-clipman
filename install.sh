@@ -10,7 +10,7 @@ PATTERN="$SITE_PACKAGES/$MODULE_NAME*"
 # Check if removed from site_packages
 for path in $PATTERN; do
     if [ -e "$path" ]; then
-        echo "WARNING: you need to remove '$PATTERN' first, terminating."
+        echo "WARNING: you need to remove '$path' first, terminating."
 #        exit 1
     fi
 done
