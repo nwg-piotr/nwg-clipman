@@ -11,9 +11,10 @@ PATTERN="$SITE_PACKAGES/$MODULE_NAME*"
 for path in $PATTERN; do
     if [ -e "$path" ]; then
         echo "WARNING: you need to remove '$PATTERN' first, terminating."
-        exit 1
+#        exit 1
     fi
 done
+exit 0
 
 # Remove launcher script
 rm -f "/usr/bin/$PROGRAM_NAME"
