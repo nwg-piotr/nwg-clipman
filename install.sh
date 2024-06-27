@@ -9,7 +9,7 @@ PATTERN="$SITE_PACKAGES/$PROG_NAME*"
 
 for path in $PATTERN; do
     if [ -e "$path" ]; then
-        echo "WARNING: you need to remove '$path' first, terminating."
+        echo "WARNING: you need to remove '$PATTERN' first, terminating."
         exit 1
     fi
 done
