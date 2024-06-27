@@ -16,6 +16,7 @@ for path in $PATTERN; do
 done
 
 # Remove launcher script
+echo "Removing /usr/bin/$PROGRAM_NAME"
 rm -f "/usr/bin/$PROGRAM_NAME"
 
 python -m build --wheel --no-isolation
