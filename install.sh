@@ -7,7 +7,7 @@ MODULE_NAME="nwg_clipman"
 SITE_PACKAGES="$(python3 -c "import sysconfig; print(sysconfig.get_paths()['purelib'])")"
 PATTERN="$SITE_PACKAGES/$MODULE_NAME*"
 
-# Check if removed from site_packages
+# Remove from site_packages
 for path in $PATTERN; do
     if [ -e "$path" ]; then
         echo "Removing $path"
