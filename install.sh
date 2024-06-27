@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
 # Do we have necessary python modules installed?
-python -c "import build; import installer; import wheel; import setuptools" 2>/dev/null || echo "One of 'python-build', 'python-installer', 'python-wheel', 'python-setuptools' not found!" && exit 1
+if python -c "import build, installer, wheel, setuptools"; then
+  echo "python-build, python-installer, python-wheel, python-setuptools found."
+else
+  echo "One of 'python-build', 'python-installer', 'python-wheel', 'python-setuptools' not found, terminating."
+  exit 1
+fi
 
 PROGRAM_NAME="nwg-clipman"
 MODULE_NAME="nwg_clipman"
