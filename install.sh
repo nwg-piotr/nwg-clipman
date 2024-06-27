@@ -16,7 +16,6 @@ for path in $PATTERN; do
 done
 
 # Remove launcher script
-#[ -f "/usr/bin/$PROGRAM_NAME" ] && sudo rm "/usr/bin/$PROGRAM_NAME"
 rm -f "/usr/bin/$PROGRAM_NAME"
 
 python -m build --wheel --no-isolation
