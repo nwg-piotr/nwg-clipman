@@ -15,7 +15,7 @@ for path in $PATTERN; do
 done
 
 # Remove launcher script
-[ -f "/usr/bin/$PROG_NAME" ] && sudo rm "/usr/bin/$PROG_NAME"
+[ -f /usr/bin/$PROG_NAME ] && sudo rm /usr/bin/$PROG_NAME
 
 install -Dm 644 -t "/usr/share/pixmaps" nwg-clipman.svg
 install -Dm 644 -t "/usr/share/applications" nwg-clipman.desktop
