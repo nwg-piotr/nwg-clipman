@@ -2,7 +2,7 @@
 
 # Do we have necessary python modules installed?
 if python -c "import build, installer, wheel, setuptools"; then
-  echo "python-build, python-installer, python-wheel, python-setuptools found."
+  echo "Packages python-build, python-installer, python-wheel, python-setuptools found."
 else
   echo "One of 'python-build', 'python-installer', 'python-wheel', 'python-setuptools' not found, terminating."
   exit 1
@@ -22,8 +22,10 @@ for path in $PATTERN; do
 done
 
 # Remove launcher script
-echo "Removing /usr/bin/$PROGRAM_NAME"
-rm -f "/usr/bin/$PROGRAM_NAME"
+if [ -f "/usr/bin/$PROGRAM_NAME" ]; then
+  echo "Removing /usr/bin/$PROGRAM_NAME"
+  rm "/usr/bin/nwg-clipman"
+fi
 
 python -m build --wheel --no-isolation
 python -m installer dist/*.whl
