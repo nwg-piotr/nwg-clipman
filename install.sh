@@ -3,9 +3,10 @@
 # Make sure you have 'python-build' 'python-installer' 'python-wheel' and 'python-setuptools' installed.
 
 # Check if removed from site_packages
-PROG_NAME="nwg_clipman"
+PROGRAM_NAME="nwg-clipman"
+MODULE_NAME="nwg_clipman"
 SITE_PACKAGES="$(python3 -c "import sysconfig; print(sysconfig.get_paths()['purelib'])")"
-PATTERN="$SITE_PACKAGES/$PROG_NAME*"
+PATTERN="$SITE_PACKAGES/$MODULE_NAME*"
 
 for path in $PATTERN; do
     if [ -e "$path" ]; then
@@ -15,12 +16,12 @@ for path in $PATTERN; do
 done
 
 # Remove launcher script
-[ -f /usr/bin/nwg-clipman ] && sudo rm /usr/bin/nwg-clipman
+[ -f "/usr/bin/$PROGRAM_NAME" ] && sudo rm "/usr/bin/$PROGRAM_NAME"
 
-install -Dm 644 -t "/usr/share/pixmaps" nwg-clipman.svg
-install -Dm 644 -t "/usr/share/applications" nwg-clipman.desktop
-install -Dm 644 -t "/usr/share/licenses/nwg-clipman" LICENSE
-install -Dm 644 -t "/usr/share/doc/nwg-clipman" README.md
+install -Dm 644 -t "/usr/share/pixmaps" "$PROGRAM_NAME.svg"
+install -Dm 644 -t "/usr/share/applications" "$PROGRAM_NAME.desktop"
+install -Dm 644 -t "/usr/share/licenses/$PROGRAM_NAME" LICENSE
+install -Dm 644 -t "/usr/share/doc/$PROGRAM_NAME" README.md
 
 
 python -m build --wheel --no-isolation
