@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-# Make sure you have 'python-build' 'python-installer' 'python-wheel' and 'python-setuptools' installed.
+# Do we have necessary python modules installed?
+python -c "import build; import installer; import wheel; import setuptools" 2>/dev/null || echo "One of 'python-build', 'python-installer', 'python-wheel', 'python-setuptools' not found!" && exit 1
 
 PROGRAM_NAME="nwg-clipman"
 MODULE_NAME="nwg_clipman"
