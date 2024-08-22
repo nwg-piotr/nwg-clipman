@@ -217,11 +217,13 @@ def on_wipe_button(btn):
 class ConfirmationWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, type=Gtk.WindowType.POPUP)
-        self.set_transient_for(window)
         self.set_modal(True)
         self.set_destroy_with_parent(True)
 
         self.connect("key-release-event", self.handle_keyboard)
+
+        GtkLayerShell.init_for_window(self)
+        GtkLayerShell.set_layer(self, GtkLayerShell.Layer.OVERLAY)
 
         vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         vbox.set_property("name", "warning")
