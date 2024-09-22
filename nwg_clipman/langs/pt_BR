@@ -1,8 +1,8 @@
 {
-  "clear": "Claro",
+  "clear": "Limpar",
   "clear-clipboard-history": "Limpar histórico da área de transferência",
   "close": "Fechar",
-  "copy": "Cópia",
-  "preview": "Visualização",
-  "preview-unavailable": "Visualização indisponível"
+  "copy": "Copiar",
+  "preview": "Prévia",
+  "preview-unavailable": "Prévia indisponível"
 }
