@@ -71,7 +71,7 @@ def terminate_old_instance():
         try:
             old_pid = int(load_text_file(pid_file))
             if old_pid != pid:
-                eprint(f"Attempting to kill the old instance in case it's still running, pid: {old_pid}")
+                print(f"Attempting to kill the old instance in case it's still running, pid: {old_pid}")
                 os.kill(old_pid, signal.SIGINT)
         except:
             pass
@@ -93,7 +93,7 @@ def load_vocabulary():
     # translate UI
     global voc
     # basic vocabulary (en_US)
-    voc = load_json(os.path.join(dir_name, "langs", "en_US"))
+    voc = load_json(os.path.join(dir_name, "langs", "en_US.json"))
     if not voc:
         eprint("Failed loading vocabulary, terminating")
         sys.exit(1)
@@ -109,15 +109,18 @@ def load_vocabulary():
 
     # translate if translation available
     if lang != "en_US":
-        loc_file = os.path.join(dir_name, "langs", "{}".format(lang))
+        loc_file = os.path.join(dir_name, "langs", "{}.json".format(lang))
         if os.path.isfile(loc_file):
             # localized vocabulary
             loc = load_json(loc_file)
             if not loc:
-                eprint("Failed loading translation into '{}'".format(lang))
+                eprint(f"Failed loading translation '{loc_file}'")
             else:
+                print(f"Loaded translation file: '{loc_file}'")
                 for key in loc:
                     voc[key] = loc[key]
+        else:
+            eprint(f"Translation into {lang} not found")
 
 
 def on_enter_notify_event(widget, event):
