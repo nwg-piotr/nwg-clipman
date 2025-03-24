@@ -16,6 +16,8 @@ for path in $PATTERN; do
     fi
 done
 
+[ -d "./dist" ] && rm -rf ./dist
+
 # Remove launcher script
 if [ -f "/usr/bin/$PROGRAM_NAME" ]; then
   echo "Removing /usr/bin/$PROGRAM_NAME"
