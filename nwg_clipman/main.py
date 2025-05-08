@@ -41,6 +41,7 @@ flowbox = None
 preview_frame = None
 btn_copy = None
 selected_item = None
+exit_code = None
 
 if not is_command("cliphist") or not is_command("wl-copy"):
     # die if dependencies check failed
@@ -57,12 +58,18 @@ def list_cliphist():
         return []
 
 
+def quit_with_exit_code(ec):
+    global exit_code
+    exit_code = ec
+    Gtk.main_quit()
+
+
 def signal_handler(sig, frame):
     # gentle handle termination
     desc = {2: "SIGINT", 15: "SIGTERM"}
     if sig == 2 or sig == 15:
         eprint("Terminated with {}".format(desc[sig]))
-        Gtk.main_quit()
+        quit_with_exit_code(128 + sig)
 
 
 def terminate_old_instance():
@@ -86,7 +93,7 @@ def handle_keyboard(win, event):
         if search_entry.get_text():
             search_entry.set_text("")
         else:
-            Gtk.main_quit()
+            quit_with_exit_code(1)
 
 
 def load_vocabulary():
@@ -257,7 +264,7 @@ class ConfirmationWindow(Gtk.Window):
         eprint("Wipe cliphist")
         subprocess.run("cliphist wipe", shell=True)
 
-        Gtk.main_quit()
+        quit_with_exit_code(2)
 
 
 class FlowboxItem(Gtk.Box):
@@ -354,6 +361,9 @@ def main():
     global window
     window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
 
+    def exit_1(widget):
+        quit_with_exit_code(1)
+
     if not args.window:
         # attach to gtk-layer-shell
         GtkLayerShell.init_for_window(window)
@@ -361,7 +371,7 @@ def main():
         GtkLayerShell.set_exclusive_zone(window, 0)
         GtkLayerShell.set_keyboard_mode(window, GtkLayerShell.KeyboardMode.ON_DEMAND)
 
-    window.connect('destroy', Gtk.main_quit)
+    window.connect('destroy', exit_1)
     window.connect("key-release-event", handle_keyboard)
 
     vbox = Gtk.Box.new(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -426,7 +436,7 @@ def main():
     # "Close" button
     btn = Gtk.Button.new_with_label(voc["close"])
     btn.set_property("valign", Gtk.Align.END)
-    btn.connect("clicked", Gtk.main_quit)
+    btn.connect("clicked", exit_1)
     ibox.pack_start(btn, True, True, 0)
 
     window.show_all()
@@ -450,4 +460,5 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
+    sys.exit(exit_code)
