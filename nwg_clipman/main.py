@@ -2,7 +2,7 @@
 
 """
 nwg-shell clipboard manager (GUI for cliphist by Senan Kelly)
-Copyright (c) 2024 Piotr Miller
+Copyright (c) 2024-2025 Piotr Miller & Contributors
 e-mail: nwg.piotr@gmail.com
 Project: https://github.com/nwg-piotr/nwg-clipman
 License: MIT
