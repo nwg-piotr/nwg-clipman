@@ -1,8 +1,8 @@
 {
-  "clear": "Claro",
+  "clear": "Borrar",
   "clear-clipboard-history": "Borrar historial del portapapeles",
-  "close": "Cerca",
+  "close": "Cerrar",
   "copy": "Copiar",
-  "preview": "Avance",
+  "preview": "Vista previa",
   "preview-unavailable": "Vista previa no disponible"
 }
