@@ -279,6 +279,8 @@ class FlowboxItem(Gtk.Box):
         self.pack_start(eb, True, True, 0)
         name = parts[1]
         label = Gtk.Label.new(name)
+        label.set_max_width_chars(80)
+        label.set_line_wrap(True)
         label.set_property("halign", Gtk.Align.START)
         eb.add(label)
 
