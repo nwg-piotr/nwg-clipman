@@ -157,6 +157,10 @@ def flowbox_filter(_search_entry):
 def on_child_activated(fb, child):
     # on flowbox item clicked
     global selected_item
+    # If the item was already clicked - copy it
+    if selected_item == child.get_name():
+        on_copy_button(None)
+    # If not, show full entry preview
     selected_item = child.get_name()
     name = bytes(child.get_name(), 'utf-8')
     subprocess.run(f"cliphist decode > {tmp_file}", shell=True, input=name)
